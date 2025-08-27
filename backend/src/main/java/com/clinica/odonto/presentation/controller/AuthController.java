@@ -41,8 +41,8 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String token) {
         try {
-            // Implementar lógica para obter usuário atual baseado no token
-            return ResponseEntity.ok("Usuário autenticado");
+            Usuario usuario = authService.getCurrentUser(token);
+            return ResponseEntity.ok(usuario);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erro ao obter usuário: " + e.getMessage());
         }

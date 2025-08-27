@@ -42,7 +42,9 @@ import {
   CheckCircle as CheckCircleIcon,
   PlayArrow as PlayArrowIcon,
   Stop as StopIcon,
-  Cancel as CancelIcon
+  Cancel as CancelIcon,
+  Inventory as InventoryIcon,
+  Remove as RemoveIcon
 } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -52,6 +54,8 @@ import { format } from 'date-fns';
 import consultaService from '../services/consultaService';
 import pacienteService from '../services/pacienteService';
 import dentistaService from '../services/dentistaService';
+import materialService from '../services/materialService';
+import materialConsultaService from '../services/materialConsultaService';
 import { useAuth } from '../contexts/AuthContext';
 
 const Consultas = () => {
@@ -59,7 +63,10 @@ const Consultas = () => {
   const [consultas, setConsultas] = useState([]);
   const [pacientes, setPacientes] = useState([]);
   const [dentistas, setDentistas] = useState([]);
+  const [materiais, setMateriais] = useState([]);
+  const [materiaisConsulta, setMateriaisConsulta] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMateriais, setLoadingMateriais] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
@@ -73,6 +80,12 @@ const Consultas = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuConsulta, setMenuConsulta] = useState(null);
+  const [openMaterialDialog, setOpenMaterialDialog] = useState(false);
+  const [materialForm, setMaterialForm] = useState({
+    materialId: '',
+    quantidade: '',
+    observacoes: ''
+  });
 
   const [formData, setFormData] = useState({
     pacienteId: '',
@@ -116,14 +129,16 @@ const Consultas = () => {
 
   const carregarPacientesEDentistas = async () => {
     try {
-      const [pacientesData, dentistasData] = await Promise.all([
+      const [pacientesData, dentistasData, materiaisData] = await Promise.all([
         pacienteService.listarTodos(),
-        dentistaService.listarTodos()
+        dentistaService.listarTodos(),
+        materialService.listarTodos()
       ]);
       setPacientes(pacientesData.filter(p => p.ativo));
       setDentistas(dentistasData.filter(d => d.ativo));
+      setMateriais(materiaisData.filter(m => m.ativo));
     } catch (error) {
-      console.error('Erro ao carregar pacientes e dentistas:', error);
+      console.error('Erro ao carregar dados:', error);
     }
   };
 
@@ -188,7 +203,7 @@ const Consultas = () => {
     carregarDados();
   };
 
-  const handleOpenDialog = (mode, consulta = null) => {
+  const handleOpenDialog = async (mode, consulta = null) => {
     setDialogMode(mode);
     setSelectedConsulta(consulta);
     
@@ -202,6 +217,7 @@ const Consultas = () => {
         valor: '',
         status: 'AGENDADA'
       });
+      setMateriaisConsulta([]);
     } else if (consulta) {
       setFormData({
         pacienteId: consulta.pacienteId,
@@ -212,6 +228,10 @@ const Consultas = () => {
         valor: consulta.valor?.toString() || '',
         status: consulta.status
       });
+      // Carregar materiais da consulta se existir
+      if (consulta.id) {
+        await carregarMateriaisConsulta(consulta.id);
+      }
     }
     
     setOpenDialog(true);
@@ -271,8 +291,78 @@ const Consultas = () => {
     }
   };
 
-  const showSnackbar = (message, severity) => {
+  const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
+  };
+
+  const carregarMateriaisConsulta = async (consultaId) => {
+    try {
+      setLoadingMateriais(true);
+      const materiais = await materialConsultaService.buscarPorConsulta(consultaId);
+      setMateriaisConsulta(materiais);
+    } catch (error) {
+      console.error('Erro ao carregar materiais da consulta:', error);
+      setSnackbar({
+        open: true,
+        message: 'Erro ao carregar materiais da consulta',
+        severity: 'error'
+      });
+    } finally {
+      setLoadingMateriais(false);
+    }
+  };
+
+  const handleOpenMaterialDialog = () => {
+    setMaterialForm({
+      materialId: '',
+      quantidade: '',
+      observacoes: ''
+    });
+    setOpenMaterialDialog(true);
+  };
+
+  const handleCloseMaterialDialog = () => {
+    setOpenMaterialDialog(false);
+    setMaterialForm({
+      materialId: '',
+      quantidade: '',
+      observacoes: ''
+    });
+  };
+
+  const handleAddMaterial = async () => {
+    if (!selectedConsulta?.id || !materialForm.materialId || !materialForm.quantidade) {
+      showSnackbar('Preencha todos os campos obrigatórios', 'error');
+      return;
+    }
+
+    try {
+      const materialData = {
+        consultaId: selectedConsulta.id,
+        materialId: materialForm.materialId,
+        quantidadeUtilizada: parseFloat(materialForm.quantidade),
+        observacoes: materialForm.observacoes
+      };
+
+      await materialConsultaService.registrar(materialData);
+      await carregarMateriaisConsulta(selectedConsulta.id);
+      handleCloseMaterialDialog();
+      showSnackbar('Material adicionado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao adicionar material:', error);
+      showSnackbar('Erro ao adicionar material', 'error');
+    }
+  };
+
+  const handleRemoveMaterial = async (materialConsultaId) => {
+    try {
+      await materialConsultaService.remover(materialConsultaId);
+      await carregarMateriaisConsulta(selectedConsulta.id);
+      showSnackbar('Material removido com sucesso!');
+    } catch (error) {
+      console.error('Erro ao remover material:', error);
+      showSnackbar('Erro ao remover material', 'error');
+    }
   };
 
   const canEdit = () => {
@@ -482,6 +572,86 @@ const Consultas = () => {
                             </IconButton>
                           </Tooltip>
                         )}
+              
+              {/* Seção de Materiais */}
+              {selectedConsulta?.id && (
+                <Grid item xs={12}>
+                  <Box sx={{ mt: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                      <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <InventoryIcon />
+                        Materiais Utilizados
+                      </Typography>
+                      {dialogMode !== 'view' && (
+                        <Button
+                          variant="outlined"
+                          startIcon={<AddIcon />}
+                          onClick={handleOpenMaterialDialog}
+                          size="small"
+                        >
+                          Adicionar Material
+                        </Button>
+                      )}
+                    </Box>
+                    
+                    {loadingMateriais ? (
+                      <Typography>Carregando materiais...</Typography>
+                    ) : materiaisConsulta.length > 0 ? (
+                      <TableContainer component={Paper} variant="outlined">
+                        <Table size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Material</TableCell>
+                              <TableCell align="right">Quantidade</TableCell>
+                              <TableCell align="right">Preço Unit.</TableCell>
+                              <TableCell align="right">Total</TableCell>
+                              {dialogMode !== 'view' && <TableCell align="center">Ações</TableCell>}
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {materiaisConsulta.map((item) => (
+                              <TableRow key={item.id}>
+                                <TableCell>{item.material?.nome}</TableCell>
+                                <TableCell align="right">
+                                  {item.quantidadeUtilizada} {item.material?.unidadeMedida}
+                                </TableCell>
+                                <TableCell align="right">
+                                  R$ {item.precoUnitario?.toFixed(2)}
+                                </TableCell>
+                                <TableCell align="right">
+                                  R$ {item.valorTotal?.toFixed(2)}
+                                </TableCell>
+                                {dialogMode !== 'view' && (
+                                  <TableCell align="center">
+                                    <IconButton
+                                      size="small"
+                                      color="error"
+                                      onClick={() => handleRemoveMaterial(item.id)}
+                                    >
+                                      <RemoveIcon />
+                                    </IconButton>
+                                  </TableCell>
+                                )}
+                              </TableRow>
+                            ))}
+                            <TableRow>
+                              <TableCell colSpan={3} sx={{ fontWeight: 'bold' }}>Total Geral:</TableCell>
+                              <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                                R$ {materiaisConsulta.reduce((total, item) => total + (item.valorTotal || 0), 0).toFixed(2)}
+                              </TableCell>
+                              {dialogMode !== 'view' && <TableCell />}
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    ) : (
+                      <Typography color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
+                        Nenhum material utilizado nesta consulta
+                      </Typography>
+                    )}
+                  </Box>
+                </Grid>
+              )}
                         
                         {canChangeStatus() && (
                           <Tooltip title="Ações">
@@ -666,6 +836,57 @@ const Consultas = () => {
                 {dialogMode === 'create' ? 'Agendar' : 'Salvar'}
               </Button>
             )}
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog para Adicionar Material */}
+        <Dialog open={openMaterialDialog} onClose={handleCloseMaterialDialog} maxWidth="sm" fullWidth>
+          <DialogTitle>Adicionar Material à Consulta</DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel>Material *</InputLabel>
+                  <Select
+                    value={materialForm.materialId}
+                    onChange={(e) => setMaterialForm({ ...materialForm, materialId: e.target.value })}
+                    label="Material *"
+                  >
+                    {materiais.map(material => (
+                      <MenuItem key={material.id} value={material.id}>
+                        {material.nome} - {material.codigo} (Estoque: {material.estoqueAtual} {material.unidadeMedida})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Quantidade Utilizada *"
+                  type="number"
+                  value={materialForm.quantidade}
+                  onChange={(e) => setMaterialForm({ ...materialForm, quantidade: e.target.value })}
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Observações"
+                  multiline
+                  rows={3}
+                  value={materialForm.observacoes}
+                  onChange={(e) => setMaterialForm({ ...materialForm, observacoes: e.target.value })}
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseMaterialDialog}>Cancelar</Button>
+            <Button onClick={handleAddMaterial} variant="contained">
+              Adicionar
+            </Button>
           </DialogActions>
         </Dialog>
 

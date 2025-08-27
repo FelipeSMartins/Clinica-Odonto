@@ -22,7 +22,7 @@ public class PlanoSaudeController {
     private PlanoSaudeService planoSaudeService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<PlanoSaudeResponse> criarPlanoSaude(@Valid @RequestBody PlanoSaudeRequest request) {
         try {
             PlanoSaudeResponse response = planoSaudeService.criarPlanoSaude(request);
@@ -68,7 +68,7 @@ public class PlanoSaudeController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<PlanoSaudeResponse> atualizarPlano(
             @PathVariable Long id, 
             @Valid @RequestBody PlanoSaudeRequest request) {
@@ -81,7 +81,7 @@ public class PlanoSaudeController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deletarPlano(@PathVariable Long id) {
         try {
             planoSaudeService.deletarPlanoSaude(id);
@@ -92,7 +92,7 @@ public class PlanoSaudeController {
     }
 
     @PatchMapping("/{id}/ativar-desativar")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<PlanoSaudeResponse> ativarDesativarPlano(@PathVariable Long id) {
         try {
             PlanoSaudeResponse response = planoSaudeService.ativarDesativarPlano(id);

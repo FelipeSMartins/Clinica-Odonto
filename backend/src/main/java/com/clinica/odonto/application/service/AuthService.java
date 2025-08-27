@@ -2,6 +2,7 @@ package com.clinica.odonto.application.service;
 
 import com.clinica.odonto.application.dto.LoginRequest;
 import com.clinica.odonto.application.dto.LoginResponse;
+import java.util.List;
 import com.clinica.odonto.application.dto.UsuarioRequest;
 import com.clinica.odonto.domain.entity.Usuario;
 import com.clinica.odonto.domain.repository.UsuarioRepository;
@@ -52,7 +53,8 @@ public class AuthService {
                     usuario.getId(),
                     usuario.getNome(),
                     usuario.getEmail(),
-                    usuario.getTipo().name()
+                    usuario.getTipo().name(),
+                    List.of("ROLE_" + usuario.getTipo().name())
             );
 
         } catch (BadCredentialsException e) {
@@ -77,6 +79,18 @@ public class AuthService {
 
     public Usuario buscarUsuarioPorEmail(String email) {
         return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    }
+    
+    public Usuario getCurrentUser(String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Token inválido");
+        }
+        
+        String token = authorizationHeader.substring(7);
+        String email = jwtUtil.extractUsername(token);
+        
+        return usuarioRepository.findByEmailAndAtivo(email)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
     }
 }

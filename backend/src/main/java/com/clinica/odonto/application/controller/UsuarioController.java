@@ -27,7 +27,7 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UsuarioResponse> criarUsuario(@Valid @RequestBody UsuarioRequest request) {
         try {
             UsuarioResponse response = usuarioService.criarUsuario(request);
@@ -38,14 +38,14 @@ public class UsuarioController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<List<UsuarioResponse>> listarTodos() {
         List<UsuarioResponse> usuarios = usuarioService.listarTodos();
         return ResponseEntity.ok(usuarios);
     }
 
     @GetMapping("/paginado")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Page<UsuarioResponse>> listarComPaginacao(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -62,7 +62,7 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UsuarioResponse> buscarPorId(@PathVariable Long id) {
         Optional<UsuarioResponse> usuario = usuarioService.buscarPorId(id);
         return usuario.map(ResponseEntity::ok)
@@ -70,14 +70,14 @@ public class UsuarioController {
     }
 
     @GetMapping("/buscar/nome")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<List<UsuarioResponse>> buscarPorNome(@RequestParam String nome) {
         List<UsuarioResponse> usuarios = usuarioService.buscarPorNome(nome);
         return ResponseEntity.ok(usuarios);
     }
 
     @GetMapping("/buscar/email")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UsuarioResponse> buscarPorEmail(@RequestParam String email) {
         Optional<UsuarioResponse> usuario = usuarioService.buscarPorEmail(email);
         return usuario.map(ResponseEntity::ok)
@@ -85,14 +85,14 @@ public class UsuarioController {
     }
 
     @GetMapping("/ativos")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<List<UsuarioResponse>> listarAtivos() {
         List<UsuarioResponse> usuarios = usuarioService.listarAtivos();
         return ResponseEntity.ok(usuarios);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UsuarioResponse> atualizarUsuario(
             @PathVariable Long id, 
             @Valid @RequestBody UsuarioRequest request) {
@@ -105,7 +105,7 @@ public class UsuarioController {
     }
 
     @PatchMapping("/{id}/ativar")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UsuarioResponse> ativarUsuario(@PathVariable Long id) {
         try {
             UsuarioResponse response = usuarioService.ativarUsuario(id);
@@ -116,7 +116,7 @@ public class UsuarioController {
     }
 
     @PatchMapping("/{id}/desativar")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UsuarioResponse> desativarUsuario(@PathVariable Long id) {
         try {
             UsuarioResponse response = usuarioService.desativarUsuario(id);
@@ -127,7 +127,7 @@ public class UsuarioController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deletarUsuario(@PathVariable Long id) {
         try {
             usuarioService.deletarUsuario(id);
@@ -138,7 +138,7 @@ public class UsuarioController {
     }
 
     @PatchMapping("/{id}/senha")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UsuarioResponse> alterarSenha(
             @PathVariable Long id, 
             @RequestBody Map<String, String> request) {

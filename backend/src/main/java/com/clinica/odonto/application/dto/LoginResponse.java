@@ -1,5 +1,7 @@
 package com.clinica.odonto.application.dto;
 
+import java.util.List;
+
 public class LoginResponse {
 
     private String token;
@@ -7,15 +9,17 @@ public class LoginResponse {
     private String nome;
     private String email;
     private String tipo;
+    private List<String> authorities;
 
     public LoginResponse() {}
 
-    public LoginResponse(String token, Long id, String nome, String email, String tipo) {
+    public LoginResponse(String token, Long id, String nome, String email, String tipo, List<String> authorities) {
         this.token = token;
         this.id = id;
         this.nome = nome;
         this.email = email;
         this.tipo = tipo;
+        this.authorities = authorities;
     }
 
     public String getToken() {
@@ -56,5 +60,13 @@ public class LoginResponse {
 
     public void setTipo(String tipo) {
         this.tipo = tipo;
+    }
+
+    public List<String> getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(List<String> authorities) {
+        this.authorities = authorities;
     }
 }

@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "consultas")
@@ -51,6 +53,12 @@ public class Consulta {
 
     @Column(name = "data_atualizacao")
     private LocalDateTime dataAtualizacao;
+
+    @OneToMany(mappedBy = "consulta", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<MaterialConsulta> materiaisUtilizados = new ArrayList<>();
+
+    @OneToMany(mappedBy = "consulta", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<MovimentacaoMaterial> movimentacoesMaterial = new ArrayList<>();
 
     public Consulta() {
         this.dataCriacao = LocalDateTime.now();
@@ -148,5 +156,21 @@ public class Consulta {
 
     public void setDataAtualizacao(LocalDateTime dataAtualizacao) {
         this.dataAtualizacao = dataAtualizacao;
+    }
+
+    public List<MaterialConsulta> getMateriaisUtilizados() {
+        return materiaisUtilizados;
+    }
+
+    public void setMateriaisUtilizados(List<MaterialConsulta> materiaisUtilizados) {
+        this.materiaisUtilizados = materiaisUtilizados;
+    }
+
+    public List<MovimentacaoMaterial> getMovimentacoesMaterial() {
+        return movimentacoesMaterial;
+    }
+
+    public void setMovimentacoesMaterial(List<MovimentacaoMaterial> movimentacoesMaterial) {
+        this.movimentacoesMaterial = movimentacoesMaterial;
     }
 }

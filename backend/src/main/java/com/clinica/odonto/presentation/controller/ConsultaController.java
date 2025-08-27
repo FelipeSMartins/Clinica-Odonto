@@ -133,10 +133,12 @@ public class ConsultaController {
     @GetMapping("/periodo")
     @PreAuthorize("hasAnyRole('ADMIN', 'DENTISTA', 'RECEPCIONISTA')")
     public ResponseEntity<List<ConsultaResponse>> buscarPorPeriodo(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim) {
         try {
-            List<ConsultaResponse> consultas = consultaService.buscarPorPeriodo(inicio, fim);
+            LocalDateTime inicioDateTime = dataInicio.atStartOfDay();
+            LocalDateTime fimDateTime = dataFim.atTime(23, 59, 59);
+            List<ConsultaResponse> consultas = consultaService.buscarPorPeriodo(inicioDateTime, fimDateTime);
             return ResponseEntity.ok(consultas);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();

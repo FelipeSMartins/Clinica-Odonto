@@ -12,6 +12,8 @@ import Dentistas from './pages/Dentistas';
 import Consultas from './pages/Consultas';
 import Usuarios from './pages/Usuarios';
 import PlanosSaude from './pages/PlanosSaude';
+import Materiais from './pages/Materiais';
+import Relatorios from './pages/Relatorios';
 import NotFound from './pages/NotFound';
 import Unauthorized from './pages/Unauthorized';
 
@@ -106,6 +108,28 @@ function App() {
                 <ProtectedRoute requiredRoles={['ADMIN', 'RECEPCIONISTA']}>
                   <Layout>
                     <PlanosSaude />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/materiais"
+              element={
+                <ProtectedRoute requiredRoles={['ADMIN', 'DENTISTA']}>
+                  <Layout>
+                    <Materiais />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/relatorios"
+              element={
+                <ProtectedRoute requiredRoles={['ADMIN', 'DENTISTA']}>
+                  <Layout>
+                    <Relatorios />
                   </Layout>
                 </ProtectedRoute>
               }

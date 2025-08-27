@@ -26,6 +26,8 @@ import {
   Logout,
   MedicalServices,
   HealthAndSafety,
+  Inventory,
+  Assessment,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -93,6 +95,18 @@ const Layout = ({ children }) => {
       icon: <HealthAndSafety />,
       path: '/planos-saude',
       roles: ['ADMIN', 'RECEPCIONISTA'],
+    },
+    {
+      text: 'Materiais',
+      icon: <Inventory />,
+      path: '/materiais',
+      roles: ['ADMIN', 'DENTISTA'],
+    },
+    {
+      text: 'Relatórios',
+      icon: <Assessment />,
+      path: '/relatorios',
+      roles: ['ADMIN', 'DENTISTA'],
     },
   ];
 

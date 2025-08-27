@@ -62,11 +62,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/api/dashboard/metrics").hasAnyRole("ADMIN", "DENTISTA", "RECEPCIONISTA")
-                        .requestMatchers("/api/pacientes/**").hasAnyRole("ADMIN", "DENTISTA", "RECEPCIONISTA")
-                        .requestMatchers("/api/dentistas/**").hasAnyRole("ADMIN", "DENTISTA")
-                        .requestMatchers("/api/consultas/**").hasAnyRole("ADMIN", "DENTISTA", "RECEPCIONISTA")
-                        .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers("/api/dashboard/metrics").hasAnyAuthority("ROLE_ADMIN", "ROLE_DENTISTA", "ROLE_RECEPCIONISTA")
+                        .requestMatchers("/api/pacientes/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_DENTISTA", "ROLE_RECEPCIONISTA")
+                        .requestMatchers("/api/dentistas/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_DENTISTA")
+                        .requestMatchers("/api/consultas/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_DENTISTA", "ROLE_RECEPCIONISTA")
+                        .requestMatchers("/api/materiais/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_DENTISTA", "ROLE_RECEPCIONISTA")
+                        .requestMatchers("/api/movimentacoes-material/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_DENTISTA", "ROLE_RECEPCIONISTA")
+                        .requestMatchers("/api/materiais-consulta/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_DENTISTA", "ROLE_RECEPCIONISTA")
+                        .requestMatchers("/api/usuarios/**").hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated()
                 );
 
